@@ -18,14 +18,11 @@ dataBaseConnection().then(()=>{
    console.log('DataBase not Connected');
 })
 
+app.use(express.json());
+
 app.post('/signup',async(req,res)=>{
 
-   const user = new User({
-     firstName: "Satyam",
-     lastName: "Kumar",
-     emailId: "satyam@gmail.com",
-     password: "12345"
-   });
+   const user = new User(req.body);
 
    try{
        await user.save();
@@ -36,12 +33,36 @@ app.post('/signup',async(req,res)=>{
 
 });
 
+app.get('/user',async (req,res)=>{
+    const userEmail = req.body.emailId;
+    try{ 
+      
+      const user= await User.find({emailId: userEmail});
+      if(user.length === 0)
+      {
+         res.send('No User Data Found');
+      }
+      else{
+      res.send(user); 
+      }
+    }catch(err){
+      res.status(400).send('Something went wrong');
+    }
+});
+
+app.delete('/user',async (req,res)=>{
+   const userId = req.body.Id;
+   try{ 
+     const user= await User.findByIdAndDelete({_id: userId});
+     res.send("User Deleted"); 
+   } catch(err){
+     res.status(400).send("Something went wrong");
+   }
+});
+
 
 app.use('/admin', adminAuthorization);
 
-app.get("/user",(req,res)=>{
-   res.send("Hi You Landed to Get Test");
-})
 
 app.get("/admin/getAllData",(req,res)=>{
    res.send("Here is the userData");
